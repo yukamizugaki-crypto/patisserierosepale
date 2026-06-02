@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>店舗紹介 | パティスリーローズパール</title>
+  <meta name="description" content="パティスリーローズパールの店舗情報。千葉県柏市新柏にある洋菓子店。営業時間・アクセス・定休日などのご案内。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@1,500&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .shop-concept {
+      background: linear-gradient(135deg, var(--color-rose-pale) 0%, var(--color-cream) 100%);
+      padding: 100px 40px;
+    }
+    .shop-concept-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .concept-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 60px;
+      align-items: center;
+      max-width: 1000px;
+      margin: 0 auto;
+      text-align: left;
+    }
+    .concept-text-column {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .concept-subtitle {
+      font-family: var(--font-display);
+      font-size: 20px;
+      color: var(--color-rose);
+      margin-bottom: 8px;
+      letter-spacing: 0.1em;
+    }
+    .shop-concept-signature {
+      font-family: var(--font-display);
+      font-size: clamp(32px, 4vw, 42px);
+      color: var(--color-rose);
+      margin-bottom: 12px;
+      line-height: 1.1;
+    }
+    .concept-divider {
+      width: 60px;
+      height: 1px;
+      background: var(--color-rose-light);
+      margin-bottom: 24px;
+    }
+    .concept-desc {
+      font-size: 14.5px;
+      line-height: 2.1;
+      color: var(--color-text-light);
+      letter-spacing: 0.04em;
+    }
+    
+    /* ── デコレーション付き画像フレーム ── */
+    .concept-image-frame {
+      position: relative;
+      padding: 16px;
+      background: var(--color-white);
+      border: 1px solid var(--color-rose-light);
+      border-radius: var(--radius-md);
+      box-shadow: 0 15px 35px rgba(201, 120, 138, 0.22);
+      display: inline-block;
+      width: 100%;
+    }
+    .concept-image-inner {
+      position: relative;
+      overflow: hidden;
+      border-radius: calc(var(--radius-md) - 4px);
+      border: 1.5px solid var(--color-rose-light);
+      aspect-ratio: 4 / 3;
+    }
+    .concept-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.6s ease;
+    }
+    .concept-image-frame:hover .concept-img {
+      transform: scale(1.04);
+    }
+
+    /* コーナーデコレーション線 */
+    .frame-decor {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border: 2px solid var(--color-rose);
+      z-index: 10;
+      pointer-events: none;
+      transition: transform 0.3s ease;
+    }
+    .concept-image-frame:hover .frame-decor {
+      transform: scale(1.08);
+    }
+    .corner-top-left {
+      top: 6px;
+      left: 6px;
+      border-right: none;
+      border-bottom: none;
+    }
+    .corner-top-right {
+      top: 6px;
+      right: 6px;
+      border-left: none;
+      border-bottom: none;
+    }
+    .corner-bottom-left {
+      bottom: 6px;
+      left: 6px;
+      border-right: none;
+      border-top: none;
+    }
+    .corner-bottom-right {
+      bottom: 6px;
+      right: 6px;
+      border-left: none;
+      border-top: none;
+    }
+
+    @media (max-width: 800px) {
+      .shop-concept {
+        padding: 60px 24px;
+      }
+      .concept-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+        text-align: center;
+      }
+      .concept-divider {
+        margin: 0 auto 24px;
+      }
+      .concept-image-frame {
+        max-width: 480px;
+        margin: 0 auto;
+      }
+    }
+
+    /* ── ヒーロースライドショー (10枚) ── */
+    .page-hero {
+      position: relative;
+      overflow: hidden;
+      background-color: #3a2a2a;
+    }
+    .page-hero-slides {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    .page-hero-slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transform: scale(1.05);
+      animation: hero-slideshow-10 40s infinite;
+      animation-fill-mode: both;
+    }
+    .page-hero-slide:nth-child(1) { animation-delay: 0s; }
+    .page-hero-slide:nth-child(2) { animation-delay: 4s; }
+    .page-hero-slide:nth-child(3) { animation-delay: 8s; }
+    .page-hero-slide:nth-child(4) { animation-delay: 12s; }
+    .page-hero-slide:nth-child(5) { animation-delay: 16s; }
+    .page-hero-slide:nth-child(6) { animation-delay: 20s; }
+    .page-hero-slide:nth-child(7) { animation-delay: 24s; }
+    .page-hero-slide:nth-child(8) { animation-delay: 28s; }
+    .page-hero-slide:nth-child(9) { animation-delay: 32s; }
+    .page-hero-slide:nth-child(10) { animation-delay: 36s; }
+
+    @keyframes hero-slideshow-10 {
+      0% {
+        opacity: 0;
+        transform: scale(1.05);
+      }
+      2.5% {
+        opacity: 1;
+      }
+      7.5% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      10% {
+        opacity: 0;
+        transform: scale(0.98);
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header id="site-header" class="header-transparent">
+    <div class="header-inner">
+      <a href="index.html" class="site-logo"><img src="img/ロゴ.png" alt="Patisserie Rose Pale" class="site-logo-img"></a>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="メニューを開く">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation Overlay -->
+  <div class="nav-overlay" id="nav-overlay">
+    <nav>
+      <ul>
+        <li><a href="index.html"><span class="nav-en">Top</span><span class="nav-ja">トップページ</span></a></li>
+        <li><a href="namagashi.html"><span class="nav-en">Raw Sweets</span><span class="nav-ja">生菓子</span></a></li>
+        <li><a href="petits-gateaux.html"><span class="nav-en">Petits Gâteaux</span><span class="nav-ja">プティガトー</span></a></li>
+        <li><a href="yakigashi.html"><span class="nav-en">Baked Sweets</span><span class="nav-ja">焼き菓子</span></a></li>
+        <li><a href="shop.html"><span class="nav-en">Our Shop</span><span class="nav-ja">店舗紹介</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Page Hero (スライドショー) -->
+  <section class="page-hero" aria-label="店舗紹介">
+    <div class="page-hero-slides">
+      <div class="page-hero-slide" style="background-image: url('img/ガトーフレーズ.png');"></div>
+      <div class="page-hero-slide" style="background-image: url('img/タルトフリュイ.png');"></div>
+      <div class="page-hero-slide" style="background-image: url('img/レアチーズ.png');"></div>
+      <div class="page-hero-slide" style="background-image: url('img/ラクテ.png');"></div>
+      <div class="page-hero-slide" style="background-image: url('img/和栗モンブラン.png');"></div>
+      <div class="page-hero-slide" style="background-image: url('img/ショコラブラウニー.png');"></div>
+      <div class="page-hero-slide" style="background-image: url('img/シューアラ クレーム.png');"></div>
+      <div class="page-hero-slide" style="background-image: url('img/フレジェ.png');"></div>
+      <div class="page-hero-slide" style="background-image: url('img/フィナンシェ.png');"></div>
+      <div class="page-hero-slide" style="background-image: url('img/ローズパールプリン.png');"></div>
+    </div>
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <h1 class="page-title-en">Our Shop</h1>
+      <p class="page-title-ja">店舗紹介</p>
+    </div>
+  </section>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="index.html">トップ</a>
+    <span>›</span>
+    <span>店舗紹介</span>
+  </div>
+
+  <!-- Concept Section -->
+  <section class="shop-concept">
+    <div class="shop-concept-inner">
+      <div class="concept-grid">
+        <!-- Decorated Image Wrapper -->
+        <div class="concept-image-frame fade-in-up">
+          <div class="concept-image-inner">
+            <img src="img/コンセプト.png" alt="パティスリーローズパールのコンセプト" class="concept-img" loading="lazy">
+          </div>
+          <!-- L-corner ornaments -->
+          <div class="frame-decor corner-top-left"></div>
+          <div class="frame-decor corner-top-right"></div>
+          <div class="frame-decor corner-bottom-left"></div>
+          <div class="frame-decor corner-bottom-right"></div>
+        </div>
+        
+        <!-- Text Column -->
+        <div class="concept-text-column fade-in-up">
+          <span class="concept-subtitle">Concept</span>
+          <h2 class="shop-concept-signature">Patisserie Rose Pale</h2>
+          <div class="concept-divider"></div>
+          <p class="concept-desc">
+            「デパ地下クオリティが地元で買える」というコンセプトで令和2年5月11日に柏市に洋菓子店を開業しました。<br><br>
+            フランス語で淡いピンクを意味する「PATISSERIE ROSE PALE」という店舗名の通り、店舗内装やギフトボックスなども淡いピンク色で演出しています。<br><br>
+            ジャパンケーキショー東京グランガートー部門金賞受賞のケーキをアレンジした「ラクテ」や、地元青果で仕入れた新鮮な季節のフルーツを使用したケーキ、チョコレートケーキなどを提供しています。
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Shop Info Section -->
+  <main class="shop-section" id="shop-info">
+    <div class="shop-inner">
+      <div class="section-title fade-in-up">
+        <span class="title-en">Shop Info</span>
+        <span class="title-ja">店舗情報</span>
+        <span class="title-line"></span>
+      </div>
+
+      <div class="shop-info-card fade-in-up">
+        <p class="shop-info-title">Rose Pale</p>
+        <table class="shop-info-table">
+          <tbody>
+            <tr>
+              <td>店舗名</td>
+              <td>パティスリーローズパール</td>
+            </tr>
+            <tr>
+              <td>住所</td>
+              <td>
+                〒277-0084<br>
+                千葉県柏市新柏3-16-8 コーポカトレア1F
+              </td>
+            </tr>
+            <tr>
+              <td>電話</td>
+              <td><a href="tel:04-7197-5966" style="color: var(--color-rose);">04-7197-5966</a></td>
+            </tr>
+            <tr>
+              <td>営業時間</td>
+              <td>
+                平日 10:00〜19:00<br>
+                土日祝 10:00〜18:00
+              </td>
+            </tr>
+            <tr>
+              <td>定休日</td>
+              <td>
+                水曜日・木曜日<br>
+                <span style="font-size: 11px; color: var(--color-text-light); display: inline-block; margin-top: 4px;">
+                  ※ 最新情報は<a href="https://www.instagram.com/rosepale2020/" target="_blank" rel="noopener noreferrer" style="color: var(--color-rose); text-decoration: underline;">Instagram</a>をご確認ください
+                </span>
+              </td>
+            </tr>
+            <tr>
+              <td>アクセス</td>
+              <td>
+                JR常磐線・東武アーバンパークライン「柏駅」より<br>
+                バス「新柏」バス停徒歩約3分
+              </td>
+            </tr>
+            <tr>
+              <td>Instagram</td>
+              <td>
+                <a href="https://www.instagram.com/rosepale2020/" target="_blank" rel="noopener noreferrer" style="color: var(--color-rose);">
+                  @rosepale2020
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td>公式LINE</td>
+              <td>
+                <a href="https://line.me/R/ti/p/@408lzbvm?oat_content=url" target="_blank" rel="noopener noreferrer" style="color: #06C755; text-decoration: underline; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width: 15px; height: 15px;"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                  公式LINEはこちら
+                </a>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div style="display: flex; gap: 20px; margin-top: 40px; justify-content: center; flex-wrap: wrap;">
+          <a href="tel:04-7197-5966" class="btn-primary">電話でお問い合わせ</a>
+          <a href="https://www.instagram.com/rosepale2020/" target="_blank" rel="noopener noreferrer" class="btn-outline">Instagram をフォロー</a>
+        </div>
+      </div>
+
+      <!-- Map -->
+      <div class="shop-map fade-in-up">
+        <iframe
+          src="https://maps.google.com/maps?q=パティスリーローズパール,千葉県柏市新柏3-16-8&amp;hl=ja&amp;output=embed"
+          allowfullscreen=""
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          title="パティスリーローズパール地図">
+        </iframe>
+      </div>
+
+      <div style="text-align: center; margin-top: 24px;" class="fade-in-up">
+        <a href="https://goo.gl/maps/tMZ2dfhwpbiLXZkw8" target="_blank" rel="noopener noreferrer" class="btn-outline">
+          Google マップで開く
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <p>&copy; 2026 Patisserie Rose Pale. All Rights Reserved.</p>
+  </footer>
+
+  <button id="back-to-top" aria-label="ページトップへ戻る">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"/>
+    </svg>
+  </button>
+
+      <div class="sp-bottom-bar">
+    <ul>
+      <li>
+        <a href="tel:04-7197-5966" aria-label="電話する">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8a19.79 19.79 0 01-3.07-8.72A2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.56-.56a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+          </svg>
+          Tel
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/rosepale2020/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+          Instagram
+        </a>
+      </li>
+      <li>
+        <a href="https://line.me/R/ti/p/@408lzbvm?oat_content=url" target="_blank" rel="noopener noreferrer" aria-label="LINE">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+          LINE
+        </a>
+      </li>
+      <li>
+        <a href="https://goo.gl/maps/tMZ2dfhwpbiLXZkw8" target="_blank" rel="noopener noreferrer" aria-label="地図を開く">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            <circle cx="12" cy="9" r="2.5"/>
+          </svg>
+          Map
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

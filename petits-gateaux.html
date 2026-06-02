@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>プティガトー | パティスリーローズパール</title>
+  <meta name="description" content="パティスリーローズパールのプティガトー（小さなケーキ）一覧。フランス伝統の技法で作る一口サイズの芸術品。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@1,500&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── プティガトーページ固有スタイル ── */
+
+    /* カード画像エリア */
+    .petit-card {
+      background: var(--color-white);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .petit-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* 画像ラッパー：タップで説明オーバーレイ表示 */
+    .petit-img-wrap {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 画像スタイル */
+    .petit-img {
+      width: 100%;
+      height: 220px;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    /* グレー画像プレースホルダー */
+    .petit-img-wrap .img-placeholder {
+      height: 220px;
+      background: #c8c8c8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      transition: transform 0.4s ease;
+    }
+    
+    .petit-img-wrap .img-placeholder::after {
+      content: 'PHOTO';
+    }
+
+    /* タップヒント（説明あり） */
+    @keyframes flower-pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 4px 10px rgba(201, 120, 138, 0.45);
+      }
+      50% {
+        transform: scale(1.1);
+        box-shadow: 0 6px 14px rgba(201, 120, 138, 0.6), 0 0 8px rgba(232, 180, 192, 0.4);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 4px 10px rgba(201, 120, 138, 0.45);
+      }
+    }
+    .petit-img-wrap.has-desc::before {
+      content: '';
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--color-rose-light), var(--color-rose));
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
+      border-radius: 50%;
+      z-index: 2;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M12 2a3 3 0 0 0-3 3c0 2 3 5 3 5s3-3 3-5a3 3 0 0 0-3-3z'/%3E%3Cpath d='M12 22a3 3 0 0 0 3-3c0-2-3-5-3-5s-3 3-3 5a3 3 0 0 0 3 3z'/%3E%3Cpath d='M2 12a3 3 0 0 0 3 3c2 0 5-3 5-5s-3-3-5-3a3 3 0 0 0-3 3z'/%3E%3Cpath d='M22 12a3 3 0 0 0-3-3c-2 0-5 3-5 5s3 3 5 3a3 3 0 0 0 3-3z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 16px;
+      box-shadow: 0 4px 10px rgba(201, 120, 138, 0.45);
+      transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+      animation: flower-pulse 2.4s infinite ease-in-out;
+    }
+    .petit-img-wrap.has-desc.active::before {
+      opacity: 0;
+      transform: scale(0.8);
+      pointer-events: none;
+    }
+
+    /* 説明オーバーレイ */
+    .petit-desc-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(58, 42, 42, 0.88);
+      backdrop-filter: blur(2px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .petit-img-wrap.active .petit-desc-overlay {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+
+    .petit-desc-overlay p {
+      color: var(--color-white);
+      font-size: 13px;
+      line-height: 1.85;
+      text-align: center;
+      letter-spacing: 0.05em;
+    }
+
+    /* 閉じるボタン */
+    .petit-close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 4;
+      transition: background-color 0.2s, transform 0.2s;
+    }
+    .petit-close-btn:hover {
+      background: rgba(255,255,255,0.4);
+      transform: rotate(90deg);
+    }
+    .petit-close-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: white;
+      stroke-width: 2;
+    }
+
+    /* カード下部テキスト */
+    .petit-card-body {
+      padding: 16px 18px;
+    }
+    .petit-card-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--color-text);
+      margin: 0;
+      letter-spacing: 0.05em;
+    }
+    .petit-card-name-en {
+      display: block;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 12px;
+      color: var(--color-rose);
+      margin-top: 4px;
+      letter-spacing: 0.05em;
+    }
+    .petit-card-tag {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--color-rose);
+      border: 1px solid var(--color-rose-light);
+      border-radius: 20px;
+      padding: 2px 10px;
+      margin-top: 8px;
+    }
+
+    /* グリッド */
+    .petit-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* セクション区切り */
+    .petit-category {
+      max-width: 1200px;
+      margin: 60px auto 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--color-rose-light);
+    }
+    .petit-category-title {
+      font-family: var(--font-display);
+      font-size: 32px;
+      color: var(--color-rose);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .petit-category-title-ja {
+      font-size: 12px;
+      letter-spacing: 0.25em;
+      color: var(--color-text-light);
+    }
+
+    /* タップ説明テキスト */
+    .tap-hint {
+      text-align: center;
+      font-size: 12px;
+      color: var(--color-text-light);
+      letter-spacing: 0.1em;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .tap-hint-dot {
+      width: 22px;
+      height: 22px;
+      background: linear-gradient(135deg, var(--color-rose-light), var(--color-rose));
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(201, 120, 138, 0.3);
+    }
+    .tap-hint-dot svg {
+      width: 11px;
+      height: 11px;
+      stroke: white;
+      stroke-width: 2.5;
+    }
+
+    @media (max-width: 960px) {
+      .petit-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .petit-desc-overlay {
+        padding: 12px 10px;
+        overflow-y: auto;
+      }
+      .petit-desc-overlay p {
+        font-size: 15px;
+        line-height: 1.6;
+      }
+    }
+    @media (max-width: 600px) {
+      .petit-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+      }
+      .petit-img {
+        height: 160px;
+      }
+      .petit-card-body {
+        padding: 12px 14px;
+      }
+      .petit-card-name {
+        font-size: 13px;
+      }
+      .petit-desc-overlay {
+        padding: 8px 6px;
+      }
+      .petit-desc-overlay p {
+        font-size: 14px;
+        line-height: 1.45;
+      }
+    }
+
+    /* ── ヒーロースライドショー ── */
+    .page-hero {
+      position: relative;
+      overflow: hidden;
+      background-color: #3a2a2a;
+    }
+    .page-hero-slides {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    .page-hero-slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transform: scale(1.05);
+      animation: hero-slideshow 12s infinite;
+      animation-fill-mode: both;
+    }
+    .page-hero-slide:nth-child(1) {
+      animation-delay: 0s;
+    }
+    .page-hero-slide:nth-child(2) {
+      animation-delay: 4s;
+    }
+    .page-hero-slide:nth-child(3) {
+      animation-delay: 8s;
+    }
+
+    @keyframes hero-slideshow {
+      0% {
+        opacity: 0;
+        transform: scale(1.05);
+      }
+      8.33% {
+        opacity: 1;
+      }
+      33.33% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      41.66% {
+        opacity: 0;
+        transform: scale(0.98);
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header id="site-header" class="header-transparent">
+    <div class="header-inner">
+      <a href="index.html" class="site-logo"><img src="img/ロゴ.png" alt="Patisserie Rose Pale" class="site-logo-img"></a>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="メニューを開く">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation Overlay -->
+  <div class="nav-overlay" id="nav-overlay">
+    <nav>
+      <ul>
+        <li><a href="index.html"><span class="nav-en">Top</span><span class="nav-ja">トップページ</span></a></li>
+        <li><a href="namagashi.html"><span class="nav-en">Raw Sweets</span><span class="nav-ja">生菓子</span></a></li>
+        <li><a href="petits-gateaux.html"><span class="nav-en">Petits Gâteaux</span><span class="nav-ja">プティガトー</span></a></li>
+        <li><a href="yakigashi.html"><span class="nav-en">Baked Sweets</span><span class="nav-ja">焼き菓子</span></a></li>
+        <li><a href="shop.html"><span class="nav-en">Our Shop</span><span class="nav-ja">店舗紹介</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Page Hero (スライドショー) -->
+  <section class="page-hero" aria-label="プティガトー">
+    <div class="page-hero-slides">
+      <div class="page-hero-slide" style="background-image: url('img/レアチーズ.png');"></div>
+      <div class="page-hero-slide" style="background-image: url('img/ガトーフレーズ.png');"></div>
+      <div class="page-hero-slide" style="background-image: url('img/ショコラブラウニー.png');"></div>
+    </div>
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <h1 class="page-title-en">Petits Gâteaux</h1>
+      <p class="page-title-ja">プティガトー</p>
+    </div>
+  </section>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="index.html">トップ</a>
+    <span>›</span>
+    <span>プティガトー</span>
+  </div>
+
+  <!-- Product Section -->
+  <main style="padding: 60px 30px 100px;">
+    <div class="section-title fade-in-up">
+      <span class="title-en">Petits Gâteaux</span>
+      <span class="title-ja">プティガトー</span>
+      <span class="title-line"></span>
+    </div>
+
+    <p class="tap-hint fade-in-up">
+      <span class="tap-hint-dot">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2a3 3 0 0 0-3 3c0 2 3 5 3 5s3-3 3-5a3 3 0 0 0-3-3z"/>
+          <path d="M12 22a3 3 0 0 0 3-3c0-2-3-5-3-5s-3 3-3 5a3 3 0 0 0 3 3z"/>
+          <path d="M2 12a3 3 0 0 0 3 3c2 0 5-3 5-5s-3-3-5-3a3 3 0 0 0-3 3z"/>
+          <path d="M22 12a3 3 0 0 0-3-3c-2 0-5 3-5 5s3 3 5 3a3 3 0 0 0 3-3z"/>
+        </svg>
+      </span>
+      のついた写真をタップすると説明文が表示されます
+    </p>
+
+    <!-- 定番の商品 -->
+    <div class="petit-category fade-in-up">
+      <p class="petit-category-title">Standard</p>
+      <p class="petit-category-title-ja">定番の商品</p>
+    </div>
+    <div class="petit-grid">
+
+      <!-- ピスターシュ -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-1" onclick="toggleDesc('card-1')">
+          <img src="img/ピスターシュ2.png" alt="ピスターシュ" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-1')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>ピスタチオムース、フランボワーズクレームブリュレ、グリオットチェリーコンポート。土台はパートシュクレ、ピスタチオ生地で組み立てました。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">ピスターシュ</h2>
+          <span class="petit-card-name-en">Pistache</span>
+        </div>
+      </article>
+
+      <!-- レアチーズ -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-2" onclick="toggleDesc('card-2')">
+          <img src="img/レアチーズ.png" alt="レアチーズ" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-2')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>クリームチーズムース、マンゴーとパッションフルーツのクリーム、土台はパートシュクレ、表面にはレモンのグラサージュをかけました。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">レアチーズ</h2>
+          <span class="petit-card-name-en">Tarte aux Fromages</span>
+        </div>
+      </article>
+
+      <!-- ラクテ -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-3" onclick="toggleDesc('card-3')">
+          <img src="img/ラクテ（スタッフおすすめ！）.png" alt="ラクテ" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-3')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>ミルクチョコレートムース、キャラメルクレームブリュレ、チョコレートクリーム（ヘーゼルナッツキャラメリゼ）を組み合わせました。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">ラクテ <span class="petit-card-tag">スタッフおすすめ！</span></h2>
+          <span class="petit-card-name-en">Lactée</span>
+        </div>
+      </article>
+
+      <!-- ガトーフレーズ -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-4" onclick="toggleDesc('card-4')">
+          <img src="img/ガトーフレーズ.png" alt="ガトーフレーズ" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-4')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>苺、生クリーム、スポンジのバランスにこだわりました。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">ガトーフレーズ</h2>
+          <span class="petit-card-name-en">Gâteau aux Fraises</span>
+        </div>
+      </article>
+
+      <!-- ショコラブラウニー -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-5" onclick="toggleDesc('card-5')">
+          <img src="img/ショコラブラウニー.png" alt="ショコラブラウニー" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-5')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>底にブラウニー生地（オレンジピール、クルミ）ムースはフランス産、スペイン産のチョコレート（カカオ61％）を使用しました。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">ショコラブラウニー</h2>
+          <span class="petit-card-name-en">Chocolat Brownie</span>
+        </div>
+      </article>
+
+      <!-- タルトフリュイ -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-7" onclick="toggleDesc('card-7')">
+          <img src="img/タルトフリュイ2.png" alt="タルトフリュイ" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-7')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>しっかり焼き込んだタルトにカスタードクリーム、季節のフルーツを盛りつけました。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">タルトフリュイ</h2>
+          <span class="petit-card-name-en">Tarte aux Fruits</span>
+        </div>
+      </article>
+
+      <!-- 濃厚ガトーショコラ -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-8" onclick="toggleDesc('card-8')">
+          <img src="img/濃厚ガトーショコラ2.png" alt="濃厚ガトーショコラ" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-8')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>フランス産チョコレート（カカオ56％）使用し、チョコチップをアクセントに合わせました。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">濃厚ガトーショコラ <span class="petit-card-tag">リニューアル！</span></h2>
+          <span class="petit-card-name-en">Gâteau Chocolat</span>
+        </div>
+      </article>
+
+      <!-- サバラン -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-9" onclick="toggleDesc('card-9')">
+          <img src="img/サバラン.png" alt="サバラン" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-9')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>ブリオッシュ生地にラム酒、アプリコットリキュールのシロップを染み込ませ、オレンジ果肉、カスタードクリーム、アンズジャムで仕上げました。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">サバラン</h2>
+          <span class="petit-card-name-en">Savarin</span>
+        </div>
+      </article>
+
+      <!-- ローズパールプリン -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-10" onclick="toggleDesc('card-10')">
+          <img src="img/ローズパールプリン.png" alt="ローズパールプリン" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-10')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>バニラをふんだんに使用した濃厚プリンです。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">ローズパールプリン</h2>
+          <span class="petit-card-name-en">Rose Pale Pudding</span>
+        </div>
+      </article>
+
+      <!-- シューアラ クレーム -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-11" onclick="toggleDesc('card-11')">
+          <img src="img/シューアラ クレーム.png" alt="シューアラ クレーム" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-11')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>クッキー生地を乗せて焼いたシュー生地に、バニラ入りのカスタードクリームを詰めました。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">シューアラ クレーム</h2>
+          <span class="petit-card-name-en">Chou à la Crème</span>
+        </div>
+      </article>
+
+      <!-- ティラミス -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-12" onclick="toggleDesc('card-12')">
+          <img src="img/ティラミス.png" alt="ティラミス" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-12')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>イタリアの伝統菓子。イタリア産のマスカルポーネを使用しセンターにクレームブリュレ、生地にコーヒーを染み込ませました。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">ティラミス</h2>
+          <span class="petit-card-name-en">Tiramisù</span>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- 季節限定 -->
+    <div class="petit-category fade-in-up">
+      <p class="petit-category-title">Seasonal</p>
+      <p class="petit-category-title-ja">季節限定の商品</p>
+    </div>
+    <div class="petit-grid">
+
+      <!-- 和栗のモンブラン -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-13" onclick="toggleDesc('card-13')">
+          <img src="img/和栗モンブラン.png" alt="和栗のモンブラン" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-13')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>筑波産のマロンペーストにカスタードクリームを合わせたクリーム、生クリーム、渋皮栗、乾燥焼きしたアーモンドメレンゲを土台にして組み立てました。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">和栗のモンブラン</h2>
+          <span class="petit-card-name-en">Mont-Blanc aux Marrons Japonais</span>
+        </div>
+      </article>
+
+      <!-- コーヒーパンナコッタ -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-14" onclick="toggleDesc('card-14')">
+          <img src="img/コーヒーパンナコッタ.png" alt="コーヒーパンナコッタ" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-14')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>コーヒーゼリーにイタリアの菓子パンナコッタと合わせてみました。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">コーヒーパンナコッタ</h2>
+          <span class="petit-card-name-en">Panna Cotta au Café</span>
+        </div>
+      </article>
+
+      <!-- シャインマスカットタルト -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-15" onclick="toggleDesc('card-15')">
+          <img src="img/シャインマスカットタルト.png" alt="シャインマスカットタルト" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-15')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>自家製タルトにカスタードクリーム、生クリーム、シャインマスカットを盛りつけました。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">シャインマスカットタルト</h2>
+          <span class="petit-card-name-en">Tarte aux Shine Muscat</span>
+        </div>
+      </article>
+
+      <!-- フレジェ -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-16" onclick="toggleDesc('card-16')">
+          <img src="img/フレジェ.png" alt="フレジェ" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-16')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>ピスタチオのダクワーズ、ピスタチオのクレームムースリーヌ、ふんだんに苺をサンドしました。仕上げに自家製フランボワーズジャムを塗りました。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">フレジェ</h2>
+          <span class="petit-card-name-en">Fraisier</span>
+        </div>
+      </article>
+
+      <!-- ザッハトルテ -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-17" onclick="toggleDesc('card-17')">
+          <img src="img/ザッハトルテ.png" alt="ザッハトルテ" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-17')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>オーストリアの伝統菓子。チョコレート生地にアプリコットジャムを塗りチョコレートでコーティングしました。生クリームと一緒にお召し上がりください。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">ザッハトルテ</h2>
+          <span class="petit-card-name-en">Sachertorte</span>
+        </div>
+      </article>
+
+      <!-- タルト・タタン -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-18" onclick="toggleDesc('card-18')">
+          <img src="img/タルト・タタン.png" alt="タルト・タタン" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-18')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>りんご（紅玉）をキャレメリゼしオーブンでじっくりと焼き上げました。土台は発酵バターを使用したパイ生地です。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">タルト・タタン</h2>
+          <span class="petit-card-name-en">Tarte Tatin</span>
+        </div>
+      </article>
+
+      <!-- 栗のクランブルタルト -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-19" onclick="toggleDesc('card-19')">
+          <img src="img/栗のクランブルタルト.png" alt="栗のクランブルタルト" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-19')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>タルト生地の中にフランス産のマロンクリーム、アーモンドクリーム、渋皮栗、クランブルを散らして焼成しました。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">栗のクランブルタルト</h2>
+          <span class="petit-card-name-en">Tarte aux Marrons et Crumble</span>
+        </div>
+      </article>
+
+      <!-- カヌレマロン -->
+      <article class="petit-card fade-in-up">
+        <div class="petit-img-wrap has-desc" id="card-20" onclick="toggleDesc('card-20')">
+          <img src="img/カヌレマロン.png" alt="カヌレマロン" class="petit-img" loading="lazy">
+          <div class="petit-desc-overlay">
+            <button class="petit-close-btn" onclick="event.stopPropagation(); toggleDesc('card-20')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>フランスの伝統菓子。刻んだ栗と生地にマロンクリームを合わせました。外がカリッと中はしっとりしています。</p>
+          </div>
+        </div>
+        <div class="petit-card-body">
+          <h2 class="petit-card-name">カヌレマロン</h2>
+          <span class="petit-card-name-en">Cannelé aux Marrons</span>
+        </div>
+      </article>
+
+    </div>
+
+    <div style="text-align: center; margin-top: 60px;" class="fade-in-up">
+      <p style="font-size:13px; color: var(--color-text-light); letter-spacing: 0.1em; margin-bottom: 8px;">
+        ※ 商品は季節によって変わります。詳細はお電話にてお問い合わせください。
+      </p>
+      <a href="tel:04-7197-5966" class="btn-outline" style="margin-top: 20px;">04-7197-5966</a>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <p>&copy; 2026 Patisserie Rose Pale. All Rights Reserved.</p>
+  </footer>
+
+  <button id="back-to-top" aria-label="ページトップへ戻る">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"/>
+    </svg>
+  </button>
+
+      <div class="sp-bottom-bar">
+    <ul>
+      <li>
+        <a href="tel:04-7197-5966" aria-label="電話する">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8a19.79 19.79 0 01-3.07-8.72A2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.56-.56a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+          </svg>
+          Tel
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/rosepale2020/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+          Instagram
+        </a>
+      </li>
+      <li>
+        <a href="https://line.me/R/ti/p/@408lzbvm?oat_content=url" target="_blank" rel="noopener noreferrer" aria-label="LINE">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+          LINE
+        </a>
+      </li>
+      <li>
+        <a href="https://goo.gl/maps/tMZ2dfhwpbiLXZkw8" target="_blank" rel="noopener noreferrer" aria-label="地図を開く">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            <circle cx="12" cy="9" r="2.5"/>
+          </svg>
+          Map
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    // 説明オーバーレイの開閉
+    function toggleDesc(id) {
+      const wrap = document.getElementById(id);
+      if (!wrap || !wrap.classList.contains('has-desc')) return;
+
+      const isActive = wrap.classList.contains('active');
+
+      // 他のすべてを閉じる
+      document.querySelectorAll('.petit-img-wrap.active').forEach(el => {
+        el.classList.remove('active');
+      });
+
+      // 自分をトグル
+      if (!isActive) {
+        wrap.classList.add('active');
+      }
+    }
+
+    // 外側クリックで閉じる
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.petit-img-wrap')) {
+        document.querySelectorAll('.petit-img-wrap.active').forEach(el => {
+          el.classList.remove('active');
+        });
+      }
+    });
+  </script>
+</body>
+</html>
