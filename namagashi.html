@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ホールケーキ | パティスリーローズパール</title>
+  <meta name="description" content="パティスリーローズパールのホールケーキ一覧。旬の素材を使った、瑞々しい洋菓子をご用意しております。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@1,500&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── ホールケーキページ固有スタイル ── */
+
+    /* カード画像エリア */
+    .namagashi-card {
+      background: var(--color-white);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .namagashi-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* 画像ラッパー：タップで説明オーバーレイ表示 */
+    .namagashi-img-wrap {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 画像スタイル */
+    .namagashi-img {
+      width: 100%;
+      height: 240px;
+      object-fit: cover;
+      transition: transform 0.5s ease;
+    }
+
+    .namagashi-card:hover .namagashi-img {
+      transform: scale(1.05);
+    }
+
+    /* タップヒント（説明あり） */
+    @keyframes flower-pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 4px 10px rgba(201, 120, 138, 0.45);
+      }
+      50% {
+        transform: scale(1.1);
+        box-shadow: 0 6px 14px rgba(201, 120, 138, 0.6), 0 0 8px rgba(232, 180, 192, 0.4);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 4px 10px rgba(201, 120, 138, 0.45);
+      }
+    }
+    .namagashi-img-wrap.has-desc::before {
+      content: '';
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--color-rose-light), var(--color-rose));
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
+      border-radius: 50%;
+      z-index: 2;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M12 2a3 3 0 0 0-3 3c0 2 3 5 3 5s3-3 3-5a3 3 0 0 0-3-3z'/%3E%3Cpath d='M12 22a3 3 0 0 0 3-3c0-2-3-5-3-5s-3 3-3 5a3 3 0 0 0 3 3z'/%3E%3Cpath d='M2 12a3 3 0 0 0 3 3c2 0 5-3 5-5s-3-3-5-3a3 3 0 0 0-3 3z'/%3E%3Cpath d='M22 12a3 3 0 0 0-3-3c-2 0-5 3-5 5s3 3 5 3a3 3 0 0 0 3-3z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 16px;
+      box-shadow: 0 4px 10px rgba(201, 120, 138, 0.45);
+      transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+      animation: flower-pulse 2.4s infinite ease-in-out;
+    }
+    .namagashi-img-wrap.has-desc.active::before {
+      opacity: 0;
+      transform: scale(0.8);
+      pointer-events: none;
+    }
+
+    /* 説明オーバーレイ */
+    .namagashi-desc-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(58, 42, 42, 0.88);
+      backdrop-filter: blur(2px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .namagashi-img-wrap.active .namagashi-desc-overlay {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+
+    .namagashi-desc-overlay p {
+      color: var(--color-white);
+      font-size: 15px;
+      line-height: 2.2;
+      text-align: center;
+      letter-spacing: 0.1em;
+      font-weight: 400;
+    }
+
+    /* 閉じるボタン */
+    .namagashi-close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 4;
+      transition: background-color 0.2s, transform 0.2s;
+    }
+    .namagashi-close-btn:hover {
+      background: rgba(255,255,255,0.4);
+      transform: rotate(90deg);
+    }
+    .namagashi-close-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: white;
+      stroke-width: 2;
+    }
+
+    /* カード下部テキスト */
+    .namagashi-card-body {
+      padding: 16px 18px;
+      text-align: center;
+    }
+    .namagashi-card-name {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--color-text);
+      margin: 0;
+      letter-spacing: 0.05em;
+    }
+    .namagashi-card-name-en {
+      display: block;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 13px;
+      color: var(--color-rose);
+      margin-top: 4px;
+      letter-spacing: 0.05em;
+    }
+
+    /* グリッド */
+    .namagashi-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* タップ説明テキスト */
+    .tap-hint {
+      text-align: center;
+      font-size: 12px;
+      color: var(--color-text-light);
+      letter-spacing: 0.1em;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .tap-hint-dot {
+      width: 22px;
+      height: 22px;
+      background: linear-gradient(135deg, var(--color-rose-light), var(--color-rose));
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(201, 120, 138, 0.3);
+    }
+    .tap-hint-dot svg {
+      width: 11px;
+      height: 11px;
+      stroke: white;
+      stroke-width: 2.5;
+    }
+
+    @media (max-width: 960px) {
+      .namagashi-grid {
+        grid-template-columns: 1fr;
+        max-width: 500px;
+        margin: 0 auto;
+      }
+      .namagashi-grid .namagashi-img {
+        aspect-ratio: 1 / 1;
+        height: auto;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .namagashi-grid {
+        max-width: 100%;
+      }
+    }
+
+    /* ── ヒーロースライドショー ── */
+    .page-hero {
+      position: relative;
+      overflow: hidden;
+      background-color: #3a2a2a;
+    }
+    .page-hero-slides {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    .page-hero-slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transform: scale(1.05);
+      animation: hero-slideshow 12s infinite;
+      animation-fill-mode: both;
+    }
+    .page-hero-slide:nth-child(1) {
+      animation-delay: 0s;
+    }
+    .page-hero-slide:nth-child(2) {
+      animation-delay: 4s;
+    }
+    .page-hero-slide:nth-child(3) {
+      animation-delay: 8s;
+    }
+
+    @keyframes hero-slideshow {
+      0% {
+        opacity: 0;
+        transform: scale(1.05);
+      }
+      8.33% {
+        opacity: 1;
+      }
+      33.33% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      41.66% {
+        opacity: 0;
+        transform: scale(0.98);
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header id="site-header" class="header-transparent">
+    <div class="header-inner">
+      <a href="index.html" class="site-logo"><img src="img/ロゴ.png" alt="Patisserie Rose Pale" class="site-logo-img"></a>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="メニューを開く">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation Overlay -->
+  <div class="nav-overlay" id="nav-overlay">
+    <nav>
+      <ul>
+        <li><a href="index.html"><span class="nav-en">Top</span><span class="nav-ja">トップページ</span></a></li>
+        <li><a href="namagashi.html"><span class="nav-en">Whole Cakes</span><span class="nav-ja">ホールケーキ</span></a></li>
+        <li><a href="petits-gateaux.html"><span class="nav-en">Petits Gâteaux</span><span class="nav-ja">プティガトー</span></a></li>
+        <li><a href="yakigashi.html"><span class="nav-en">Baked Sweets</span><span class="nav-ja">焼き菓子</span></a></li>
+        <li><a href="shop.html"><span class="nav-en">Our Shop</span><span class="nav-ja">店舗紹介</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Page Hero (スライドショー) -->
+  <section class="page-hero" aria-label="ホールケーキ">
+    <div class="page-hero-slides">
+      <div class="page-hero-slide" style="background-image: url('img/生デコレーションケーキ.png');"></div>
+      <div class="page-hero-slide" style="background-image: url('img/タルトフリュイ.png');"></div>
+      <div class="page-hero-slide" style="background-image: url('img/モンブランタルト.png');"></div>
+    </div>
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <h1 class="page-title-en">Whole Cakes</h1>
+      <p class="page-title-ja">ホールケーキ</p>
+    </div>
+  </section>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="index.html">トップ</a>
+    <span>›</span>
+    <span>ホールケーキ</span>
+  </div>
+
+  <!-- Product Section -->
+  <main class="product-section">
+    <div class="section-title fade-in-up">
+      <span class="title-en">Whole Cakes</span>
+      <span class="title-ja">ホールケーキ</span>
+      <span class="title-line"></span>
+    </div>
+    <p class="product-intro fade-in-up">
+      旬の素材を丁寧に吟味し、フランス伝統の技法で仕上げたホールケーキをご用意しております。<br>
+      毎日店頭に並ぶ季節感あふれるお菓子を、どうぞお楽しみください。
+    </p>
+
+    <p class="tap-hint fade-in-up">
+      <span class="tap-hint-dot">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2a3 3 0 0 0-3 3c0 2 3 5 3 5s3-3 3-5a3 3 0 0 0-3-3z"/>
+          <path d="M12 22a3 3 0 0 0 3-3c0-2-3-5-3-5s-3 3-3 5a3 3 0 0 0 3 3z"/>
+          <path d="M2 12a3 3 0 0 0 3 3c2 0 5-3 5-5s-3-3-5-3a3 3 0 0 0-3 3z"/>
+          <path d="M22 12a3 3 0 0 0-3-3c-2 0-5 3-5 5s3 3 5 3a3 3 0 0 0 3-3z"/>
+        </svg>
+      </span>
+      のついた写真をタップするとサイズ一覧が表示されます
+    </p>
+
+    <div class="namagashi-grid">
+
+      <!-- 生デコレーションケーキ -->
+      <article class="namagashi-card fade-in-up">
+        <div class="namagashi-img-wrap has-desc" id="card-1" onclick="toggleDesc('card-1')">
+          <img src="img/生デコレーションケーキ.png" alt="生デコレーションケーキ" class="namagashi-img" loading="lazy">
+          <div class="namagashi-desc-overlay">
+            <button class="namagashi-close-btn" onclick="event.stopPropagation(); toggleDesc('card-1')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>
+              4号 12センチ<br>
+              5号 15センチ<br>
+              6号 18センチ<br>
+              7号 21センチ
+            </p>
+          </div>
+        </div>
+        <div class="namagashi-card-body">
+          <h2 class="namagashi-card-name">生デコレーションケーキ</h2>
+          <span class="namagashi-card-name-en">Gâteau Décoration</span>
+        </div>
+      </article>
+
+      <!-- 生チョコレートケーキ（いちご盛り） -->
+      <article class="namagashi-card fade-in-up">
+        <div class="namagashi-img-wrap has-desc" id="card-2" onclick="toggleDesc('card-2')">
+          <img src="img/生チョコレートケーキ(いちご盛り).png" alt="生チョコレートケーキ（いちご盛り）" class="namagashi-img" loading="lazy">
+          <div class="namagashi-desc-overlay">
+            <button class="namagashi-close-btn" onclick="event.stopPropagation(); toggleDesc('card-2')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>
+              4号 12センチ<br>
+              5号 15センチ<br>
+              6号 18センチ<br>
+              7号 21センチ
+            </p>
+          </div>
+        </div>
+        <div class="namagashi-card-body">
+          <h2 class="namagashi-card-name">生チョコレートケーキ<br>(いちご盛り)</h2>
+          <span class="namagashi-card-name-en">Gâteau Chocolat aux Fraises</span>
+        </div>
+      </article>
+
+      <!-- タルトフリュイ -->
+      <article class="namagashi-card fade-in-up">
+        <div class="namagashi-img-wrap has-desc" id="card-3" onclick="toggleDesc('card-3')">
+          <img src="img/タルトフリュイ.png" alt="タルトフリュイ" class="namagashi-img" loading="lazy">
+          <div class="namagashi-desc-overlay">
+            <button class="namagashi-close-btn" onclick="event.stopPropagation(); toggleDesc('card-3')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>
+              5号 15センチ<br>
+              6号 18センチ
+            </p>
+          </div>
+        </div>
+        <div class="namagashi-card-body">
+          <h2 class="namagashi-card-name">タルトフリュイ</h2>
+          <span class="namagashi-card-name-en">Tarte aux Fruits</span>
+        </div>
+      </article>
+
+      <!-- タルトフレーズ -->
+      <article class="namagashi-card fade-in-up">
+        <div class="namagashi-img-wrap has-desc" id="card-4" onclick="toggleDesc('card-4')">
+          <img src="img/タルトフレーズ.png" alt="タルトフレーズ" class="namagashi-img" loading="lazy">
+          <div class="namagashi-desc-overlay">
+            <button class="namagashi-close-btn" onclick="event.stopPropagation(); toggleDesc('card-4')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>
+              5号 15センチ<br>
+              6号 18センチ
+            </p>
+          </div>
+        </div>
+        <div class="namagashi-card-body">
+          <h2 class="namagashi-card-name">タルトフレーズ</h2>
+          <span class="namagashi-card-name-en">Tarte aux Fraises</span>
+        </div>
+      </article>
+
+      <!-- モンブランタルト -->
+      <article class="namagashi-card fade-in-up">
+        <div class="namagashi-img-wrap has-desc" id="card-5" onclick="toggleDesc('card-5')">
+          <img src="img/モンブランタルト.png" alt="モンブランタルト" class="namagashi-img" loading="lazy">
+          <div class="namagashi-desc-overlay">
+            <button class="namagashi-close-btn" onclick="event.stopPropagation(); toggleDesc('card-5')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>
+              5号 15センチ<br>
+              6号 18センチ
+            </p>
+          </div>
+        </div>
+        <div class="namagashi-card-body">
+          <h2 class="namagashi-card-name">モンブランタルト</h2>
+          <span class="namagashi-card-name-en">Tarte au Mont-Blanc</span>
+        </div>
+      </article>
+
+      <!-- 濃厚ガトーショコラ -->
+      <article class="namagashi-card fade-in-up">
+        <div class="namagashi-img-wrap has-desc" id="card-6" onclick="toggleDesc('card-6')">
+          <img src="img/濃厚ガトーショコラ.png" alt="濃厚ガトーショコラ" class="namagashi-img" loading="lazy">
+          <div class="namagashi-desc-overlay">
+            <button class="namagashi-close-btn" onclick="event.stopPropagation(); toggleDesc('card-6')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>
+              5号 15cm<br>
+              6号 18cm
+            </p>
+          </div>
+        </div>
+        <div class="namagashi-card-body">
+          <h2 class="namagashi-card-name">濃厚ガトーショコラ</h2>
+          <span class="namagashi-card-name-en">Gâteau Chocolat Riche</span>
+        </div>
+      </article>
+
+      <!-- ラクテ -->
+      <article class="namagashi-card fade-in-up">
+        <div class="namagashi-img-wrap has-desc" id="card-7" onclick="toggleDesc('card-7')">
+          <img src="img/ラクテ.png" alt="ラクテ" class="namagashi-img" loading="lazy">
+          <div class="namagashi-desc-overlay">
+            <button class="namagashi-close-btn" onclick="event.stopPropagation(); toggleDesc('card-7')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>
+              5号 15センチ
+            </p>
+          </div>
+        </div>
+        <div class="namagashi-card-body">
+          <h2 class="namagashi-card-name">ラクテ</h2>
+          <span class="namagashi-card-name-en">Lactée</span>
+        </div>
+      </article>
+
+      <!-- ピスターシュ -->
+      <article class="namagashi-card fade-in-up">
+        <div class="namagashi-img-wrap has-desc" id="card-8" onclick="toggleDesc('card-8')">
+          <img src="img/ピスターシュ.png" alt="ピスターシュ" class="namagashi-img" loading="lazy">
+          <div class="namagashi-desc-overlay">
+            <button class="namagashi-close-btn" onclick="event.stopPropagation(); toggleDesc('card-8')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>
+              6号 18センチ
+            </p>
+          </div>
+        </div>
+        <div class="namagashi-card-body">
+          <h2 class="namagashi-card-name">ピスターシュ</h2>
+          <span class="namagashi-card-name-en">Pistache</span>
+        </div>
+      </article>
+
+    </div>
+
+    <div style="text-align: center; margin-top: 60px;" class="fade-in-up">
+      <p style="font-size:13px; color: var(--color-text-light); letter-spacing: 0.1em; margin-bottom: 8px;">
+        ※ 商品は季節によって変わります。詳細はお電話にてお問い合わせください。
+      </p>
+      <a href="tel:04-7197-5966" class="btn-outline" style="margin-top: 20px;">04-7197-5966</a>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <p>&copy; 2026 Patisserie Rose Pale. All Rights Reserved.</p>
+  </footer>
+
+  <button id="back-to-top" aria-label="ページトップへ戻る">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"/>
+    </svg>
+  </button>
+
+      <div class="sp-bottom-bar">
+    <ul>
+      <li>
+        <a href="tel:04-7197-5966" aria-label="電話する">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8a19.79 19.79 0 01-3.07-8.72A2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.56-.56a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+          </svg>
+          Tel
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/rosepale2020/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+          Instagram
+        </a>
+      </li>
+      <li>
+        <a href="https://line.me/R/ti/p/@408lzbvm?oat_content=url" target="_blank" rel="noopener noreferrer" aria-label="LINE">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+          LINE
+        </a>
+      </li>
+      <li>
+        <a href="https://goo.gl/maps/tMZ2dfhwpbiLXZkw8" target="_blank" rel="noopener noreferrer" aria-label="地図を開く">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            <circle cx="12" cy="9" r="2.5"/>
+          </svg>
+          Map
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    // 説明オーバーレイの開閉
+    function toggleDesc(id) {
+      const wrap = document.getElementById(id);
+      if (!wrap || !wrap.classList.contains('has-desc')) return;
+
+      const isActive = wrap.classList.contains('active');
+
+      // 他のすべてを閉じる
+      document.querySelectorAll('.namagashi-img-wrap.active').forEach(el => {
+        el.classList.remove('active');
+      });
+
+      // 自分をトグル
+      if (!isActive) {
+        wrap.classList.add('active');
+      }
+    }
+
+    // 外側クリックで閉じる
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.namagashi-img-wrap')) {
+        document.querySelectorAll('.namagashi-img-wrap.active').forEach(el => {
+          el.classList.remove('active');
+        });
+      }
+    });
+  </script>
+</body>
+</html>

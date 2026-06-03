@@ -1,0 +1,950 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>焼き菓子 | パティスリーローズパール</title>
+  <meta name="description" content="パティスリーローズパールの焼き菓子一覧。フィナンシェ、マドレーヌ、ガレットブルトンヌなど豊富な品揃え。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Allura&family=Cormorant+Garamond:ital,wght@1,500&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* ── 焼き菓子ページ固有スタイル ── */
+
+    /* カード画像エリア */
+    .yaki-card {
+      background: var(--color-white);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .yaki-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* 画像ラッパー：タップで説明オーバーレイ表示 */
+    .yaki-img-wrap {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* グレー画像プレースホルダー */
+    .yaki-img-wrap .img-placeholder {
+      height: 220px;
+      background: #c8c8c8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #999;
+      font-size: 12px;
+      letter-spacing: 0.15em;
+      transition: transform 0.4s ease;
+    }
+    
+
+    /* タップヒント（説明あり） */
+    @keyframes flower-pulse {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 4px 10px rgba(201, 120, 138, 0.45);
+      }
+      50% {
+        transform: scale(1.1);
+        box-shadow: 0 6px 14px rgba(201, 120, 138, 0.6), 0 0 8px rgba(232, 180, 192, 0.4);
+      }
+      100% {
+        transform: scale(1);
+        box-shadow: 0 4px 10px rgba(201, 120, 138, 0.45);
+      }
+    }
+    .yaki-img-wrap.has-desc::before {
+      content: '';
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, var(--color-rose-light), var(--color-rose));
+      border: 1.5px solid rgba(255, 255, 255, 0.95);
+      border-radius: 50%;
+      z-index: 2;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='3'/%3E%3Cpath d='M12 2a3 3 0 0 0-3 3c0 2 3 5 3 5s3-3 3-5a3 3 0 0 0-3-3z'/%3E%3Cpath d='M12 22a3 3 0 0 0 3-3c0-2-3-5-3-5s-3 3-3 5a3 3 0 0 0 3 3z'/%3E%3Cpath d='M2 12a3 3 0 0 0 3 3c2 0 5-3 5-5s-3-3-5-3a3 3 0 0 0-3 3z'/%3E%3Cpath d='M22 12a3 3 0 0 0-3-3c-2 0-5 3-5 5s3 3 5 3a3 3 0 0 0 3-3z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 16px;
+      box-shadow: 0 4px 10px rgba(201, 120, 138, 0.45);
+      transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
+      animation: flower-pulse 2.4s infinite ease-in-out;
+    }
+    .yaki-img-wrap.has-desc.active::before {
+      opacity: 0;
+      transform: scale(0.8);
+      pointer-events: none;
+    }
+
+    /* 説明オーバーレイ */
+    .yaki-desc-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(58, 42, 42, 0.88);
+      backdrop-filter: blur(2px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.35s ease, transform 0.35s ease;
+      pointer-events: none;
+      z-index: 3;
+    }
+    .yaki-img-wrap.active .yaki-desc-overlay {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+    
+
+    .yaki-desc-overlay p {
+      color: var(--color-white);
+      font-size: 13px;
+      line-height: 1.85;
+      text-align: center;
+      letter-spacing: 0.05em;
+    }
+
+    /* 閉じるボタン */
+    .yaki-close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 4;
+      transition: background-color 0.2s, transform 0.2s;
+    }
+    .yaki-close-btn:hover {
+      background: rgba(255,255,255,0.4);
+      transform: rotate(90deg);
+    }
+    .yaki-close-btn svg {
+      width: 14px;
+      height: 14px;
+      stroke: white;
+      stroke-width: 2;
+    }
+
+    /* カード下部テキスト */
+    .yaki-card-body {
+      padding: 16px 18px;
+    }
+    .yaki-card-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--color-text);
+      margin: 0;
+      letter-spacing: 0.05em;
+    }
+    .yaki-card-name-en {
+      display: block;
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-size: 12px;
+      color: var(--color-rose);
+      margin-top: 4px;
+      letter-spacing: 0.05em;
+    }
+    .yaki-card-tag {
+      display: inline-block;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      color: var(--color-rose);
+      border: 1px solid var(--color-rose-light);
+      border-radius: 20px;
+      padding: 2px 10px;
+      margin-top: 8px;
+    }
+
+    /* グリッド */
+    .yaki-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* セクション区切り */
+    .yaki-category {
+      max-width: 1200px;
+      margin: 60px auto 24px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--color-rose-light);
+    }
+    .yaki-category-title {
+      font-family: var(--font-display);
+      font-size: 32px;
+      color: var(--color-rose);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .yaki-category-title-ja {
+      font-size: 12px;
+      letter-spacing: 0.25em;
+      color: var(--color-text-light);
+    }
+
+    /* タップ説明テキスト */
+    .tap-hint {
+      text-align: center;
+      font-size: 12px;
+      color: var(--color-text-light);
+      letter-spacing: 0.1em;
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .tap-hint-dot {
+      width: 22px;
+      height: 22px;
+      background: linear-gradient(135deg, var(--color-rose-light), var(--color-rose));
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(201, 120, 138, 0.3);
+    }
+    .tap-hint-dot svg {
+      width: 11px;
+      height: 11px;
+      stroke: white;
+      stroke-width: 2.5;
+    }
+
+    @media (max-width: 960px) {
+      .yaki-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .yaki-desc-overlay {
+        padding: 12px 10px;
+        overflow-y: auto;
+      }
+      .yaki-desc-overlay p {
+        font-size: 15px;
+        line-height: 1.6;
+      }
+    }
+    @media (max-width: 600px) {
+      .yaki-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 14px;
+      }
+      .yaki-img {
+        height: 160px;
+      }
+      .yaki-card-body {
+        padding: 12px 14px;
+      }
+      .yaki-card-name {
+        font-size: 13px;
+      }
+      .yaki-desc-overlay {
+        padding: 8px 6px;
+      }
+      .yaki-desc-overlay p {
+        font-size: 14px;
+        line-height: 1.45;
+      }
+    }
+
+    /* ── ヒーロースライドショー ── */
+    .page-hero {
+      position: relative;
+      overflow: hidden;
+      background-color: #3a2a2a;
+    }
+    .page-hero-slides {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+    }
+    .page-hero-slide {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transform: scale(1.05);
+      animation: hero-slideshow 12s infinite;
+      animation-fill-mode: both;
+    }
+    .page-hero-slide:nth-child(1) {
+      animation-delay: 0s;
+    }
+    .page-hero-slide:nth-child(2) {
+      animation-delay: 4s;
+    }
+    .page-hero-slide:nth-child(3) {
+      animation-delay: 8s;
+    }
+
+    @keyframes hero-slideshow {
+      0% {
+        opacity: 0;
+        transform: scale(1.05);
+      }
+      8.33% {
+        opacity: 1;
+      }
+      33.33% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      41.66% {
+        opacity: 0;
+        transform: scale(0.98);
+      }
+      100% {
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header id="site-header" class="header-transparent">
+    <div class="header-inner">
+      <a href="index.html" class="site-logo"><img src="img/ロゴ.png" alt="Patisserie Rose Pale" class="site-logo-img"></a>
+      <button class="hamburger-btn" id="hamburger-btn" aria-label="メニューを開く">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Navigation Overlay -->
+  <div class="nav-overlay" id="nav-overlay">
+    <nav>
+      <ul>
+        <li><a href="index.html"><span class="nav-en">Top</span><span class="nav-ja">トップページ</span></a></li>
+        <li><a href="namagashi.html"><span class="nav-en">Whole Cakes</span><span class="nav-ja">ホールケーキ</span></a></li>
+        <li><a href="petits-gateaux.html"><span class="nav-en">Petits Gâteaux</span><span class="nav-ja">プティガトー</span></a></li>
+        <li><a href="yakigashi.html"><span class="nav-en">Baked Sweets</span><span class="nav-ja">焼き菓子</span></a></li>
+        <li><a href="shop.html"><span class="nav-en">Our Shop</span><span class="nav-ja">店舗紹介</span></a></li>
+      </ul>
+    </nav>
+  </div>
+
+  <!-- Page Hero (スライドショー) -->
+  <section class="page-hero" aria-label="焼き菓子">
+    <div class="page-hero-slides">
+      <div class="page-hero-slide" style="background-image: url('img/マドレーヌ.png');"></div>
+      <div class="page-hero-slide" style="background-image: url('img/フィナンシェ.png');"></div>
+      <div class="page-hero-slide" style="background-image: url('img/ガレットブルトンヌ.png');"></div>
+    </div>
+    <div class="page-hero-overlay"></div>
+    <div class="page-hero-content">
+      <h1 class="page-title-en">Baked Sweets</h1>
+      <p class="page-title-ja">焼き菓子</p>
+    </div>
+  </section>
+
+  <!-- Breadcrumb -->
+  <div class="breadcrumb">
+    <a href="index.html">トップ</a>
+    <span>›</span>
+    <span>焼き菓子</span>
+  </div>
+
+  <!-- Main Content -->
+  <main style="padding: 60px 30px 100px;">
+
+    <div class="section-title fade-in-up">
+      <span class="title-en">Baked Sweets</span>
+      <span class="title-ja">焼き菓子</span>
+      <span class="title-line"></span>
+    </div>
+
+    <p class="tap-hint fade-in-up">
+      <span class="tap-hint-dot">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2a3 3 0 0 0-3 3c0 2 3 5 3 5s3-3 3-5a3 3 0 0 0-3-3z"/>
+          <path d="M12 22a3 3 0 0 0 3-3c0-2-3-5-3-5s-3 3-3 5a3 3 0 0 0 3 3z"/>
+          <path d="M2 12a3 3 0 0 0 3 3c2 0 5-3 5-5s-3-3-5-3a3 3 0 0 0-3 3z"/>
+          <path d="M22 12a3 3 0 0 0-3-3c-2 0-5 3-5 5s3 3 5 3a3 3 0 0 0 3-3z"/>
+        </svg>
+      </span>
+      のついた写真をタップすると説明文が表示されます
+    </p>
+
+    <!-- チョコレート系 -->
+    <div class="yaki-category fade-in-up">
+      <p class="yaki-category-title">Chocolat</p>
+      <p class="yaki-category-title-ja">チョコレート</p>
+    </div>
+    <div class="yaki-grid">
+
+      <!-- フォンダンショコラ -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-1" onclick="toggleDesc('card-1')">
+          <img src="img/フォンダンショコラ.png" alt="フォンダンショコラ" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-1')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>フランス産チョコレート（56％）を使用した生地、中にチョコレートソースを入れました。温めてお召し上がりください。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">フォンダンショコラ</h2>
+        </div>
+      </article>
+
+      <!-- フォンダンショコラ3個セット -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap" id="card-2">
+          <img src="img/フォンダンショコラ3個セット.png" alt="フォンダンショコラ3個セット" class="yaki-img" loading="lazy">
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">フォンダンショコラ <span class="yaki-card-tag">3個セット</span></h2>
+        </div>
+      </article>
+
+      <!-- テリーヌショコラ -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-3" onclick="toggleDesc('card-3')">
+          <img src="img/テリーヌショコラ.png" alt="テリーヌショコラ" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-3')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>フランス産チョコレート（56％）を使用し濃厚で滑らかなくちどけです。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">テリーヌショコラ</h2>
+        </div>
+      </article>
+
+    </div><!-- /yaki-grid -->
+
+    <!-- パウンドケーキ系 -->
+    <div class="yaki-category fade-in-up">
+      <p class="yaki-category-title">Pound Cake</p>
+      <p class="yaki-category-title-ja">パウンドケーキ</p>
+    </div>
+    <div class="yaki-grid">
+
+      <!-- パウンドロング6種類 -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-4" onclick="toggleDesc('card-4')">
+          <img src="img/パウンドロング6種類.png" alt="パウンドロング6種類" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-4')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>オレンジケーキ / フルーツケーキ / マロンケーキ / フィグケーキ（イチジク）/ アナナス（パイナップル）/ かのこ抹茶</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">パウンドロング <span class="yaki-card-tag">6種類</span></h2>
+        </div>
+      </article>
+
+      <!-- かのこ抹茶 -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap" id="card-5">
+          <img src="img/かのこ抹茶.png" alt="かのこ抹茶" class="yaki-img" loading="lazy">
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">かのこ抹茶</h2>
+        </div>
+      </article>
+
+      <!-- オレンジケーキ -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-6" onclick="toggleDesc('card-6')">
+          <img src="img/オレンジケーキ.png" alt="オレンジケーキ" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-6')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>角切りオレンジピールを使用しています。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">オレンジケーキ</h2>
+        </div>
+      </article>
+
+      <!-- フィグケーキ -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-7" onclick="toggleDesc('card-7')">
+          <img src="img/フィグケーキ.png" alt="フィグケーキ" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-7')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>赤ワインで煮込んだイチジクを使用しています。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">フィグケーキ</h2>
+        </div>
+      </article>
+
+      <!-- アナナス -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-8" onclick="toggleDesc('card-8')">
+          <img src="img/アナナス.png" alt="アナナス" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-8')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>パイナップル、ココナッツ、マンゴー、パッションフルーツを使用しています。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">アナナス</h2>
+        </div>
+      </article>
+
+      <!-- フルーツケーキ -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-9" onclick="toggleDesc('card-9')">
+          <img src="img/フルーツケーキ.png" alt="フルーツケーキ" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-9')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>レーズン、オレンジ、レモン、アーモンド、クルミを使用しています。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">フルーツケーキ</h2>
+        </div>
+      </article>
+
+      <!-- マロンケーキ -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-10" onclick="toggleDesc('card-10')">
+          <img src="img/マロンケーキ.png" alt="マロンケーキ" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-10')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>渋皮栗、ラム酒を使用しています。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">マロンケーキ</h2>
+        </div>
+      </article>
+
+    </div><!-- /yaki-grid -->
+
+    <!-- 焼き菓子 -->
+    <div class="yaki-category fade-in-up">
+      <p class="yaki-category-title">Petit Fours Secs</p>
+      <p class="yaki-category-title-ja">プティフールセック</p>
+    </div>
+    <div class="yaki-grid">
+
+      <!-- マドレーヌ -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-11" onclick="toggleDesc('card-11')">
+          <img src="img/マドレーヌ.png" alt="マドレーヌ" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-11')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>マジパンローマッセを使用したしっとりしたマドレーヌです。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">マドレーヌ</h2>
+        </div>
+      </article>
+
+      <!-- フィナンシェ -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-12" onclick="toggleDesc('card-12')">
+          <img src="img/フィナンシェ.png" alt="フィナンシェ" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-12')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>焦がしバターの香りがアクセントになっています。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">フィナンシェ</h2>
+        </div>
+      </article>
+
+      <!-- ブルトンヌノア -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-13" onclick="toggleDesc('card-13')">
+          <img src="img/ブルトンヌノア.png" alt="ブルトンヌノア" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-13')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>アーモンド、クルミ、カシューナッツ、ヘーゼルナッツ、ピスタチオ、マカダミアナッツを使用。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">ブルトンヌノア</h2>
+        </div>
+      </article>
+
+      <!-- クロッカン -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-15" onclick="toggleDesc('card-15')">
+          <img src="img/クロッカン.png" alt="クロッカン" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-15')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>粗く刻んだアーモンドが入ったカリカリ食感となっています。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">クロッカン</h2>
+        </div>
+      </article>
+
+      <!-- ガレットブルトンヌ -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-16" onclick="toggleDesc('card-16')">
+          <img src="img/ガレットブルトンヌ.png" alt="ガレットブルトンヌ" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-16')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>発酵バターを使用したフランス、ブルターニュ地方の焼き菓子です。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">ガレットブルトンヌ</h2>
+        </div>
+      </article>
+
+    </div><!-- /yaki-grid -->
+
+    <!-- ギフト・ナッツ系 -->
+    <div class="yaki-category fade-in-up">
+      <p class="yaki-category-title">Gift & Nuts</p>
+      <p class="yaki-category-title-ja">ギフト・ナッツ</p>
+    </div>
+    <div class="yaki-grid">
+
+      <!-- カフェペカン -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-17" onclick="toggleDesc('card-17')">
+          <img src="img/カフェペカン.png" alt="カフェペカン" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-17')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>コーヒーとピーカンナッツを使用しています。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">カフェペカン</h2>
+        </div>
+      </article>
+
+      <!-- カフェペカン ギフトケース -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-18" onclick="toggleDesc('card-18')">
+          <img src="img/カフェペカン ギフトケース.png" alt="カフェペカン ギフトケース" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-18')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>ギフトケース入りです。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">カフェペカン <span class="yaki-card-tag">ギフトケース</span></h2>
+        </div>
+      </article>
+
+      <!-- フロマージュマカダミア -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-19" onclick="toggleDesc('card-19')">
+          <img src="img/フロマージュマカダミア.png" alt="フロマージュマカダミア" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-19')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>グラナパダーノチーズ、マカダミアンナッツを使用しています。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">フロマージュマカダミア</h2>
+        </div>
+      </article>
+
+      <!-- フロマージュマカダミア ギフトケース -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-20" onclick="toggleDesc('card-20')">
+          <img src="img/フロマージュマカダミア ギフトケース.png" alt="フロマージュマカダミア ギフトケース" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-20')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>ギフトケース入りです。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">フロマージュマカダミア <span class="yaki-card-tag">ギフトケース</span></h2>
+        </div>
+      </article>
+
+      <!-- サブレココ -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-21" onclick="toggleDesc('card-21')">
+          <img src="img/サブレココ.png" alt="サブレココ" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-21')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>ココナッツファインを使用した焼き菓子です。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">サブレココ</h2>
+        </div>
+      </article>
+
+      <!-- サブレココ ギフトケース -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap" id="card-22">
+          <img src="img/サブレココ ギフトケース.png" alt="サブレココ ギフトケース" class="yaki-img" loading="lazy">
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">サブレココ <span class="yaki-card-tag">ギフトケース</span></h2>
+        </div>
+      </article>
+
+      <!-- メープルノア -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap has-desc" id="card-25" onclick="toggleDesc('card-25')">
+          <img src="img/メープルノア.png" alt="メープルノア" class="yaki-img" loading="lazy">
+          <div class="yaki-desc-overlay">
+            <button class="yaki-close-btn" onclick="event.stopPropagation(); toggleDesc('card-25')" aria-label="閉じる">
+              <svg viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <p>メープルシュガーとクルミを使用しています。</p>
+          </div>
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">メープルノア</h2>
+        </div>
+      </article>
+
+      <!-- メープルノア ギフトケース -->
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap" id="card-26">
+          <img src="img/メープルノア ギフトケース.png" alt="メープルノア ギフトケース" class="yaki-img" loading="lazy">
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">メープルノア <span class="yaki-card-tag">ギフトケース</span></h2>
+        </div>
+      </article>
+
+    </div><!-- /yaki-grid -->
+
+    <!-- マカロン -->
+    <div class="yaki-category fade-in-up">
+      <p class="yaki-category-title">Macaron</p>
+      <p class="yaki-category-title-ja">マカロン</p>
+    </div>
+    <div class="yaki-grid">
+
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap" id="card-29">
+          <img src="img/マカロンピスタチ.png" alt="マカロンピスタチ" class="yaki-img" loading="lazy">
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">マカロン ピスタチ</h2>
+        </div>
+      </article>
+
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap" id="card-30">
+          <img src="img/マカロンフレーズ.png" alt="マカロンフレーズ" class="yaki-img" loading="lazy">
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">マカロン フレーズ</h2>
+        </div>
+      </article>
+
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap" id="card-31">
+          <img src="img/マカロンレモン.png" alt="マカロンレモン" class="yaki-img" loading="lazy">
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">マカロン レモン</h2>
+        </div>
+      </article>
+
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap" id="card-32">
+          <img src="img/マカロンショコラ.png" alt="マカロンショコラ" class="yaki-img" loading="lazy">
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">マカロン ショコラ</h2>
+        </div>
+      </article>
+
+    </div><!-- /yaki-grid -->
+
+    <!-- 詰め合わせ -->
+    <div class="yaki-category fade-in-up">
+      <p class="yaki-category-title">Assortment</p>
+      <p class="yaki-category-title-ja">詰め合わせ</p>
+    </div>
+    <div class="yaki-grid">
+
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap" id="card-33">
+          <img src="img/クッキー7個.png" alt="クッキー7個" class="yaki-img" loading="lazy">
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">クッキー <span class="yaki-card-tag">7個</span></h2>
+        </div>
+      </article>
+
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap" id="card-34">
+          <img src="img/焼き菓子7個.png" alt="焼き菓子7個" class="yaki-img" loading="lazy">
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">焼き菓子 <span class="yaki-card-tag">7個</span></h2>
+        </div>
+      </article>
+
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap" id="card-35">
+          <img src="img/焼き菓子12個.png" alt="焼き菓子12個" class="yaki-img" loading="lazy">
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">焼き菓子 <span class="yaki-card-tag">12個</span></h2>
+        </div>
+      </article>
+
+      <article class="yaki-card fade-in-up">
+        <div class="yaki-img-wrap" id="card-36">
+          <img src="img/焼き菓子15個.png" alt="焼き菓子15個" class="yaki-img" loading="lazy">
+        </div>
+        <div class="yaki-card-body">
+          <h2 class="yaki-card-name">焼き菓子 <span class="yaki-card-tag">15個</span></h2>
+        </div>
+      </article>
+
+    </div><!-- /yaki-grid -->
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer-bar">
+    <p>&copy; 2026 Patisserie Rose Pale. All Rights Reserved.</p>
+  </footer>
+
+  <button id="back-to-top" aria-label="ページトップへ戻る">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="18 15 12 9 6 15"/>
+    </svg>
+  </button>
+
+      <div class="sp-bottom-bar">
+    <ul>
+      <li>
+        <a href="tel:04-7197-5966" aria-label="電話する">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8a19.79 19.79 0 01-3.07-8.72A2 2 0 012.18 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.09a16 16 0 006 6l.56-.56a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+          </svg>
+          Tel
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/rosepale2020/" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+            <circle cx="12" cy="12" r="4"/>
+            <circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/>
+          </svg>
+          Instagram
+        </a>
+      </li>
+      <li>
+        <a href="https://line.me/R/ti/p/@408lzbvm?oat_content=url" target="_blank" rel="noopener noreferrer" aria-label="LINE">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+          </svg>
+          LINE
+        </a>
+      </li>
+      <li>
+        <a href="https://goo.gl/maps/tMZ2dfhwpbiLXZkw8" target="_blank" rel="noopener noreferrer" aria-label="地図を開く">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/>
+            <circle cx="12" cy="9" r="2.5"/>
+          </svg>
+          Map
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <script src="js/main.js"></script>
+  <script>
+    // 説明オーバーレイの開閉
+    function toggleDesc(id) {
+      const wrap = document.getElementById(id);
+      if (!wrap || !wrap.classList.contains('has-desc')) return;
+
+      const isActive = wrap.classList.contains('active');
+
+      // 他のすべてを閉じる
+      document.querySelectorAll('.yaki-img-wrap.active').forEach(el => {
+        el.classList.remove('active');
+      });
+
+      // 自分をトグル
+      if (!isActive) {
+        wrap.classList.add('active');
+      }
+    }
+
+    // 外側クリックで閉じる
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.yaki-img-wrap')) {
+        document.querySelectorAll('.yaki-img-wrap.active').forEach(el => {
+          el.classList.remove('active');
+        });
+      }
+    });
+  </script>
+</body>
+</html>
