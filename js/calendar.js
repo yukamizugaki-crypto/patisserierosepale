@@ -47,11 +47,11 @@
   // ── Google カレンダーを取得して再描画 ────────────────────
   function syncCalendar() {
     // ブラウザキャッシュを防ぐためタイムスタンプをパラメータに追加
-    var cacheBust = '&_=' + Date.now();
+    var cacheBust = '?_=' + Date.now();
     fetchWithFallback(PROXIES, 0, ICS_URL + cacheBust)
       .then(function (icsText) {
-        var events = parseICS(icsText);
-        renderAll(today, events);
+        var closedDates = parseICS(icsText);
+        renderAll(today, closedDates);
       })
       .catch(function (err) {
         console.warn('[Calendar] Googleカレンダーの取得に失敗しました。定休日（水・木）を静的表示します。', err);
@@ -75,10 +75,25 @@
       });
   }
 
+  // ── YYYYMMDD 文字列を Date オブジェクトに変換（ローカル時刻）──
+  function ymdToDate(ymd) {
+    var m = ymd.match(/(\d{4})(\d{2})(\d{2})/);
+    if (!m) return null;
+    return new Date(parseInt(m[1], 10), parseInt(m[2], 10) - 1, parseInt(m[3], 10));
+  }
+
+  // ── Date を 'YYYY-MM-DD' 文字列に変換 ──
+  function dateToKey(d) {
+    return d.getFullYear() + '-'
+      + String(d.getMonth() + 1).padStart(2, '0') + '-'
+      + String(d.getDate()).padStart(2, '0');
+  }
+
   // ── ICS パーサー ─────────────────────────────────────────
-  // 戻り値: { 'YYYY-MM-DD': '予定タイトル', ... }
+  // 「休み」を含むイベントの日付のみを Set で返す
+  // 複数日イベント（DTEND 付き）にも対応
   function parseICS(text) {
-    var events = {};
+    var closedSet = {};
 
     // 折り返し行（行頭スペース/タブで継続する ICS の仕様）を連結
     var normalized = text.replace(/\r\n([ \t])/g, '$1').replace(/\r/g, '');
@@ -86,6 +101,7 @@
 
     var inEvent = false;
     var dtstart  = null;
+    var dtend    = null;
     var summary  = null;
 
     for (var i = 0; i < lines.length; i++) {
@@ -94,45 +110,60 @@
       if (line === 'BEGIN:VEVENT') {
         inEvent = true;
         dtstart  = null;
+        dtend    = null;
         summary  = null;
 
       } else if (line === 'END:VEVENT') {
-        if (inEvent && dtstart) {
-          // DATE形式（YYYYMMDD）も DATETIME形式（YYYYMMDDTHHMMSS）も対応
-          var m = dtstart.match(/(\d{4})(\d{2})(\d{2})/);
-          if (m) {
-            var key = m[1] + '-' + m[2] + '-' + m[3];
-            if (!events[key]) {
-              events[key] = summary || '休業';
+        if (inEvent && dtstart && summary && summary.indexOf('休み') !== -1) {
+          // 「休み」を含むイベントのみ定休日として登録
+          var startDate = ymdToDate(dtstart);
+          if (startDate) {
+            if (dtend) {
+              // 終日複数日イベント: DTEND は最終日の翌日なので -1日
+              var endDate = ymdToDate(dtend);
+              if (endDate) {
+                var cur = new Date(startDate);
+                while (cur < endDate) {
+                  closedSet[dateToKey(cur)] = true;
+                  cur.setDate(cur.getDate() + 1);
+                }
+              } else {
+                closedSet[dateToKey(startDate)] = true;
+              }
+            } else {
+              closedSet[dateToKey(startDate)] = true;
             }
           }
         }
         inEvent = false;
 
       } else if (inEvent) {
-        // DTSTART の値を取得（"DTSTART;VALUE=DATE:20260604" 形式にも対応）
-        if (/^DTSTART[;:]/.test(line)) {
+        // DTSTART / DTEND / SUMMARY の値を取得（大文字小文字、パラメータ付きに対応）
+        if (/^DTSTART[;:]/i.test(line)) {
           dtstart = line.split(':').slice(1).join(':');
-        } else if (line.indexOf('SUMMARY:') === 0) {
-          summary = line.substring(8);
+        } else if (/^DTEND[;:]/i.test(line)) {
+          dtend = line.split(':').slice(1).join(':');
+        } else if (/^SUMMARY[;:]/i.test(line)) {
+          summary = line.split(':').slice(1).join(':');
         }
       }
     }
 
-    return events;
+    return closedSet;
   }
 
+
   // ── レンダリング ─────────────────────────────────────────
-  // events が null の場合は水・木を静的に定休日表示（フォールバック）
-  function renderAll(todayDate, events) {
+  // closedDates が null の場合は水・木を静的に定休日表示（フォールバック）
+  function renderAll(todayDate, closedDates) {
     for (var m = 0; m < 2; m++) {
       var firstDay = new Date(todayDate.getFullYear(), todayDate.getMonth() + m, 1);
       var el = document.getElementById('cal-month-' + m);
-      if (el) el.innerHTML = buildMonth(firstDay, todayDate, events);
+      if (el) el.innerHTML = buildMonth(firstDay, todayDate, closedDates);
     }
   }
 
-  function buildMonth(firstDay, todayDate, events) {
+  function buildMonth(firstDay, todayDate, closedDates) {
     var year        = firstDay.getFullYear();
     var month       = firstDay.getMonth();
     var daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -172,11 +203,11 @@
       if (dow === 6) classes.push('cal-sat');
       if (date.getTime() === todayDate.getTime()) classes.push('cal-today');
 
-      if (events === null) {
+      if (closedDates === null) {
         // フォールバック: 水・木を静的に定休日表示
         if (dow === 3 || dow === 4) classes.push('cal-closed');
-      } else if (events[dateKey]) {
-        // Google カレンダーに予定がある日 → オレンジ（定休日）
+      } else if (closedDates[dateKey]) {
+        // Googleカレンダーで「休み」と登録された日のみ定休日色
         classes.push('cal-closed');
       }
 
