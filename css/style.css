@@ -580,8 +580,17 @@ ul {
 .cal-cell.cal-sat .cal-day-num { color: #e58ca3; }
 
 /* 定休日 */
+@keyframes calClosedFadeIn {
+  from {
+    background-color: var(--color-white);
+  }
+  to {
+    background-color: #ffaf40;
+  }
+}
+
 .cal-cell.cal-closed {
-  background: #ffaf40;
+  animation: calClosedFadeIn 0.5s ease-out forwards;
 }
 .cal-cell.cal-closed .cal-day-num {
   color: #4a3a3a;

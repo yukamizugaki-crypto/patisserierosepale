@@ -47,15 +47,37 @@
 
   // ── Google カレンダーを取得して再描画 ────────────────────
   function syncCalendar() {
-    // ブラウザキャッシュを防ぐためタイムスタンプをパラメータに追加
     var cacheBust = '?_=' + Date.now();
+
+    // ローカルファイル実行 (file://) でない場合は、まず自前の Pages Function ( /api/calendar ) を最優先で試す
+    if (window.location.protocol !== 'file:') {
+      fetch('/api/calendar' + cacheBust)
+        .then(function (res) {
+          if (!res.ok) throw new Error('Pages Function HTTP ' + res.status);
+          return res.text();
+        })
+        .then(function (icsText) {
+          var closedDates = parseICS(icsText);
+          renderAll(today, closedDates);
+        })
+        .catch(function (err) {
+          console.warn('[Calendar] Pages Functionでの取得に失敗しました。CORSプロキシへフォールバックします。', err);
+          fetchViaProxies(cacheBust);
+        });
+    } else {
+      fetchViaProxies(cacheBust);
+    }
+  }
+
+  // CORSプロキシ経由で取得
+  function fetchViaProxies(cacheBust) {
     fetchWithFallback(PROXIES, 0, ICS_URL + cacheBust)
       .then(function (icsText) {
         var closedDates = parseICS(icsText);
         renderAll(today, closedDates);
       })
       .catch(function (err) {
-        console.warn('[Calendar] Googleカレンダーの取得に失敗しました。定休日（水・木）を静的表示します。', err);
+        console.warn('[Calendar] すべてのプロキシ経由でのカレンダー取得に失敗しました。', err);
         renderAll(today, null);
       });
   }
