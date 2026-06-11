@@ -87,10 +87,15 @@
       <span class="title-line"></span>
     </div>
 
-    <div class="calendar-embed-wrap fade-in-up">
-      <div class="calendar-embed">
-        <iframe src="https://calendar.google.com/calendar/embed?src=patisserierosepale%40gmail.com&amp;ctz=Asia%2FTokyo" style="border: 0" frameborder="0" scrolling="no" title="営業カレンダー"></iframe>
-      </div>
+    <!-- 凡例 -->
+    <div class="cal-legend fade-in-up">
+      <span class="cal-legend-item"><span class="cal-legend-dot cal-legend-closed"></span>定休日</span>
+    </div>
+
+    <!-- 2か月分カレンダー -->
+    <div class="cal-grid-wrap fade-in-up" id="cal-container">
+      <div class="cal-month-block" id="cal-month-0"></div>
+      <div class="cal-month-block" id="cal-month-1"></div>
     </div>
   </section>
 
@@ -305,5 +310,6 @@
   </div>
 
   <script src="js/main.js"></script>
+  <script src="js/calendar.js"></script>
 </body>
 </html>

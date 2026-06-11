@@ -17,6 +17,7 @@
 
   // CORS プロキシ（順番に試す）
   var PROXIES = [
+    'https://cors.lol/?',
     'https://api.allorigins.win/raw?url=',
     'https://corsproxy.io/?',
     'https://api.codetabs.com/v1/proxy?quest='
