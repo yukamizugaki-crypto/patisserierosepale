@@ -65,7 +65,14 @@
     if (index >= proxies.length) {
       return Promise.reject(new Error('全プロキシで取得失敗'));
     }
-    var url = proxies[index] + encodeURIComponent(targetUrl);
+    var proxy = proxies[index];
+    var url;
+    // url= や quest= などのパラメータを持つプロキシのみエンコードし、それ以外（cors.lol/? や corsproxy.io/?）は生URLを結合
+    if (proxy.indexOf('url=') !== -1 || proxy.indexOf('quest=') !== -1) {
+      url = proxy + encodeURIComponent(targetUrl);
+    } else {
+      url = proxy + targetUrl;
+    }
     return fetch(url)
       .then(function (res) {
         if (!res.ok) throw new Error('HTTP ' + res.status);
