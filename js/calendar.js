@@ -211,10 +211,7 @@
       if (dow === 6) classes.push('cal-sat');
       if (date.getTime() === todayDate.getTime()) classes.push('cal-today');
 
-      if (closedDates === null) {
-        // フォールバック: 水・木を静的に定休日表示
-        if (dow === 3 || dow === 4) classes.push('cal-closed');
-      } else if (closedDates[dateKey]) {
+      if (closedDates && closedDates[dateKey]) {
         // Googleカレンダーで「休み」と登録された日のみ定休日色
         classes.push('cal-closed');
       }
