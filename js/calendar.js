@@ -74,25 +74,40 @@
   function fetchCalendarData() {
     var cacheBust = '?_=' + Date.now();
 
-    // ローカルファイル実行 (file://) でない場合は、まず自前の Pages Function ( /api/calendar ) を最優先で試す
-    if (window.location.protocol !== 'file:') {
-      return fetch('/api/calendar' + cacheBust)
-        .then(function (res) {
-          if (!res.ok) throw new Error('Pages Function HTTP ' + res.status);
-          return res.text();
-        })
-        .then(function (icsText) {
-          var closedDates = parseICS(icsText);
-          saveToCache(closedDates);
-          return closedDates;
-        })
-        .catch(function (err) {
-          console.warn('[Calendar] Pages Functionでの取得に失敗しました。CORSプロキシへフォールバックします。', err);
+    // 1. 同一オリジンの静的 ICS ファイルを最優先で取得（GitHub Pages / ローカル環境用）
+    return fetch('data/calendar.ics' + cacheBust)
+      .then(function (res) {
+        if (!res.ok) throw new Error('Static ICS HTTP ' + res.status);
+        return res.text();
+      })
+      .then(function (icsText) {
+        var closedDates = parseICS(icsText);
+        saveToCache(closedDates);
+        return closedDates;
+      })
+      .catch(function (err) {
+        console.warn('[Calendar] 同一オリジンのICSファイル取得に失敗しました。フォールバックします。', err);
+        
+        // 2. Cloudflare Pages Function または CORSプロキシへフォールバック
+        if (window.location.protocol !== 'file:') {
+          return fetch('/api/calendar' + cacheBust)
+            .then(function (res) {
+              if (!res.ok) throw new Error('Pages Function HTTP ' + res.status);
+              return res.text();
+            })
+            .then(function (icsText) {
+              var closedDates = parseICS(icsText);
+              saveToCache(closedDates);
+              return closedDates;
+            })
+            .catch(function (err2) {
+              console.warn('[Calendar] Pages Functionでの取得に失敗しました。CORSプロキシへフォールバックします。', err2);
+              return fetchViaProxies(cacheBust);
+            });
+        } else {
           return fetchViaProxies(cacheBust);
-        });
-    } else {
-      return fetchViaProxies(cacheBust);
-    }
+        }
+      });
   }
 
   // CORSプロキシ経由で取得

@@ -1,0 +1,33 @@
+name: Sync Google Calendar
+
+on:
+  schedule:
+    # 毎時0分に自動実行
+    - cron: '0 * * * *'
+  workflow_dispatch: # 手動実行用
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/sync-calendar.yml
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch Google Calendar ICS
+        run: |
+          mkdir -p data
+          curl -s -o data/calendar.ics "https://calendar.google.com/calendar/ical/patisserierosepale@gmail.com/public/basic.ics"
+
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add data/calendar.ics
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Sync Google Calendar" && git push)
