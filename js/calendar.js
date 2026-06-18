@@ -29,57 +29,93 @@
   var today = new Date();
   today.setHours(0, 0, 0, 0);
 
+  // 1. スクリプトの読み込みと同時に非同期取得を開始（並行処理）
+  var closedDatesPromise = fetchCalendarData();
+
   document.addEventListener('DOMContentLoaded', function () {
-    // 最初に空のカレンダーを即座に表示
-    renderAll(today, null);
+    // 2. ローカルストレージからキャッシュされた定休日データを読み込む
+    var cachedData = null;
+    try {
+      var json = localStorage.getItem('rosepale_closed_dates');
+      if (json) {
+        cachedData = JSON.parse(json);
+      }
+    } catch (e) {
+      console.warn('[Calendar] キャッシュの読み込みに失敗しました。', e);
+    }
 
-    // 初回取得
-    syncCalendar();
+    // 3. キャッシュがあれば即座に（ページを開いた瞬間に）描画し、なければ空で表示
+    if (cachedData) {
+      renderAll(today, cachedData);
+    } else {
+      renderAll(today, null);
+    }
 
-    // 以降は自動で定期更新（ページを開いている間、5分ごと）
+    // 4. 最新データの取得完了時にカレンダーを再描画
+    closedDatesPromise.then(function (closedDates) {
+      if (closedDates) {
+        renderAll(today, closedDates);
+      }
+    });
+
+    // 5. 以降は定期更新（ページを開いている間、5分ごと）
     setInterval(function () {
-      // 日付をリフレッシュ（日をまたいだ場合に対応）
       today = new Date();
       today.setHours(0, 0, 0, 0);
-      syncCalendar();
+      fetchCalendarData().then(function (closedDates) {
+        if (closedDates) {
+          renderAll(today, closedDates);
+        }
+      });
     }, REFRESH_INTERVAL_MS);
   });
 
   // ── Google カレンダーを取得して再描画 ────────────────────
-  function syncCalendar() {
+  function fetchCalendarData() {
     var cacheBust = '?_=' + Date.now();
 
     // ローカルファイル実行 (file://) でない場合は、まず自前の Pages Function ( /api/calendar ) を最優先で試す
     if (window.location.protocol !== 'file:') {
-      fetch('/api/calendar' + cacheBust)
+      return fetch('/api/calendar' + cacheBust)
         .then(function (res) {
           if (!res.ok) throw new Error('Pages Function HTTP ' + res.status);
           return res.text();
         })
         .then(function (icsText) {
           var closedDates = parseICS(icsText);
-          renderAll(today, closedDates);
+          saveToCache(closedDates);
+          return closedDates;
         })
         .catch(function (err) {
           console.warn('[Calendar] Pages Functionでの取得に失敗しました。CORSプロキシへフォールバックします。', err);
-          fetchViaProxies(cacheBust);
+          return fetchViaProxies(cacheBust);
         });
     } else {
-      fetchViaProxies(cacheBust);
+      return fetchViaProxies(cacheBust);
     }
   }
 
   // CORSプロキシ経由で取得
   function fetchViaProxies(cacheBust) {
-    fetchWithFallback(PROXIES, 0, ICS_URL + cacheBust)
+    return fetchWithFallback(PROXIES, 0, ICS_URL + cacheBust)
       .then(function (icsText) {
         var closedDates = parseICS(icsText);
-        renderAll(today, closedDates);
+        saveToCache(closedDates);
+        return closedDates;
       })
       .catch(function (err) {
         console.warn('[Calendar] すべてのプロキシ経由でのカレンダー取得に失敗しました。', err);
-        renderAll(today, null);
+        return null;
       });
+  }
+
+  // キャッシュ保存用ヘルパー
+  function saveToCache(closedDates) {
+    try {
+      localStorage.setItem('rosepale_closed_dates', JSON.stringify(closedDates));
+    } catch (e) {
+      console.warn('[Calendar] キャッシュの保存に失敗しました。', e);
+    }
   }
 
   // ── プロキシを順番に試して ICS を取得 ────────────────────
