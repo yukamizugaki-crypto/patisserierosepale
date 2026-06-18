@@ -9,19 +9,14 @@
 
   var DAYS_JA = ['日', '月', '火', '水', '木', '金', '土'];
 
-  // 埋め込みコードのカレンダーID から ICS URL を生成
+  // カレンダーID
   var CALENDAR_ID = 'patisserierosepale@gmail.com';
   var ICS_URL = 'https://calendar.google.com/calendar/ical/'
                 + encodeURIComponent(CALENDAR_ID)
                 + '/public/basic.ics';
 
-  // CORS プロキシ（順番に試す）
-  var PROXIES = [
-    'https://cors.lol/?',
-    'https://api.allorigins.win/raw?url=',
-    'https://corsproxy.io/?',
-    'https://api.codetabs.com/v1/proxy?quest='
-  ];
+  // Cloudflare Pages の API（CORS ヘッダー付きで公開済み・GitHub Pages からも呼び出し可能）
+  var CLOUDFLARE_API = 'https://patisserierosepale.pages.dev/api/calendar';
 
   // 自動更新の間隔（ミリ秒）: 5分
   var REFRESH_INTERVAL_MS = 5 * 60 * 1000;
@@ -70,14 +65,14 @@
     }, REFRESH_INTERVAL_MS);
   });
 
-  // ── Google カレンダーを取得して再描画 ────────────────────
+  // ── Google カレンダーをリアルタイム取得 ────────────────────
+  // Cloudflare Pages API（CORS ヘッダー付き）を常に使用してリアルタイムデータを取得する
   function fetchCalendarData() {
     var cacheBust = '?_=' + Date.now();
 
-    // 1. 同一オリジンの静的 ICS ファイルを最優先で取得（GitHub Pages / ローカル環境用）
-    return fetch('data/calendar.ics' + cacheBust)
+    return fetch(CLOUDFLARE_API + cacheBust)
       .then(function (res) {
-        if (!res.ok) throw new Error('Static ICS HTTP ' + res.status);
+        if (!res.ok) throw new Error('Cloudflare API HTTP ' + res.status);
         return res.text();
       })
       .then(function (icsText) {
@@ -86,41 +81,22 @@
         return closedDates;
       })
       .catch(function (err) {
-        console.warn('[Calendar] 同一オリジンのICSファイル取得に失敗しました。フォールバックします。', err);
-        
-        // 2. Cloudflare Pages Function または CORSプロキシへフォールバック
-        if (window.location.protocol !== 'file:') {
-          return fetch('/api/calendar' + cacheBust)
-            .then(function (res) {
-              if (!res.ok) throw new Error('Pages Function HTTP ' + res.status);
-              return res.text();
-            })
-            .then(function (icsText) {
-              var closedDates = parseICS(icsText);
-              saveToCache(closedDates);
-              return closedDates;
-            })
-            .catch(function (err2) {
-              console.warn('[Calendar] Pages Functionでの取得に失敗しました。CORSプロキシへフォールバックします。', err2);
-              return fetchViaProxies(cacheBust);
-            });
-        } else {
-          return fetchViaProxies(cacheBust);
-        }
-      });
-  }
-
-  // CORSプロキシ経由で取得
-  function fetchViaProxies(cacheBust) {
-    return fetchWithFallback(PROXIES, 0, ICS_URL + cacheBust)
-      .then(function (icsText) {
-        var closedDates = parseICS(icsText);
-        saveToCache(closedDates);
-        return closedDates;
-      })
-      .catch(function (err) {
-        console.warn('[Calendar] すべてのプロキシ経由でのカレンダー取得に失敗しました。', err);
-        return null;
+        console.warn('[Calendar] Cloudflare APIでの取得に失敗しました。静的ファイルへフォールバックします。', err);
+        // フォールバック: 同一オリジンの静的 ICS ファイル（GitHub Actions が定期更新）
+        return fetch('data/calendar.ics' + cacheBust)
+          .then(function (res) {
+            if (!res.ok) throw new Error('Static ICS HTTP ' + res.status);
+            return res.text();
+          })
+          .then(function (icsText) {
+            var closedDates = parseICS(icsText);
+            saveToCache(closedDates);
+            return closedDates;
+          })
+          .catch(function (err2) {
+            console.warn('[Calendar] 静的ファイルの取得にも失敗しました。', err2);
+            return null;
+          });
       });
   }
 
@@ -131,29 +107,6 @@
     } catch (e) {
       console.warn('[Calendar] キャッシュの保存に失敗しました。', e);
     }
-  }
-
-  // ── プロキシを順番に試して ICS を取得 ────────────────────
-  function fetchWithFallback(proxies, index, targetUrl) {
-    if (index >= proxies.length) {
-      return Promise.reject(new Error('全プロキシで取得失敗'));
-    }
-    var proxy = proxies[index];
-    var url;
-    // url= や quest= などのパラメータを持つプロキシのみエンコードし、それ以外（cors.lol/? や corsproxy.io/?）は生URLを結合
-    if (proxy.indexOf('url=') !== -1 || proxy.indexOf('quest=') !== -1) {
-      url = proxy + encodeURIComponent(targetUrl);
-    } else {
-      url = proxy + targetUrl;
-    }
-    return fetch(url)
-      .then(function (res) {
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        return res.text();
-      })
-      .catch(function () {
-        return fetchWithFallback(proxies, index + 1, targetUrl);
-      });
   }
 
   // ── YYYYMMDD 文字列を Date オブジェクトに変換（ローカル時刻）──
